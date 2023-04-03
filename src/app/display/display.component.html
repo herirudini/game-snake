@@ -1,0 +1,7 @@
+<div *ngFor="let i of x" class="h-100">
+  <div class="d-flex flex-row">
+    <div *ngFor="let j of y">
+      <div #item [id]="i+'-'+j" class="border border-dark bg-light coordinate-box" [ngClass]="{'prey':isPrey(item.id),'snake':isSnake(item.id)}">{{item.id}}</div>
+    </div>
+  </div>
+</div>
