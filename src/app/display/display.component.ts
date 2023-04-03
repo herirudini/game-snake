@@ -12,6 +12,7 @@ export class DisplayComponent implements OnChanges, AfterContentChecked {
   @Input() map: Map;
   @Input() snake: string[];
   @Input() prey: string;
+  @Input() gameOver: boolean;
   constructor(
     private readonly changeDetector: ChangeDetectorRef
   ) { 
@@ -29,6 +30,11 @@ export class DisplayComponent implements OnChanges, AfterContentChecked {
       if(changes.map) {
         this.x = this.map.x;
         this.y = this.map.y;
+      }
+      if (changes.gameOver) {
+        if (this.gameOver) {
+          window.alert('gameOver!!!');
+        }
       }
     }
   }

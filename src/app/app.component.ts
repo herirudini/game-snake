@@ -20,11 +20,12 @@ export class AppComponent implements OnInit, AfterViewInit {
   time: any;
   snake: string[];
   prey: string;
-
-  up: boolean = true;
+  gameOver: boolean;
+  up: boolean;
   down: boolean;
   left: boolean;
   right: boolean;
+  locked: string;
   constructor() {
   }
   @HostListener("window:resize")
@@ -34,42 +35,41 @@ export class AppComponent implements OnInit, AfterViewInit {
   @HostListener('window:keyup', ['$event'])
   onArrowRight(event: KeyboardEvent) {
     const { key } = event;
-    if (key === KeyboardArrow.U && !this.down) {
+    if (key === KeyboardArrow.U && this.locked !== KeyboardArrow.U) {
       this.up = true;
       this.down = false;
       this.left = false;
       this.right = false;
-    } else if (key === KeyboardArrow.D && !this.up) {
+    } else if (key === KeyboardArrow.D && this.locked !== KeyboardArrow.D) {
       this.up = false;
       this.down = true;
       this.left = false;
       this.right = false;
-    } else if (key === KeyboardArrow.L && !this.right) {
+    } else if (key === KeyboardArrow.L && this.locked !== KeyboardArrow.L) {
       this.up = false;
       this.down = false;
       this.left = true;
       this.right = false;
-    } else if (key === KeyboardArrow.R && !this.left) {
+    } else if (key === KeyboardArrow.R && this.locked !== KeyboardArrow.R) {
       this.up = false;
       this.down = false;
       this.left = false;
       this.right = true;
     }
-    console.log(event);
   }
   ngOnInit(): void {
     this.generateArena();
   }
-  
+
   generateArena() {
     const tempX: number[] = [];
     const tempY: number[] = [];
     const tmpCoordinatesList: string[] = [];
-    for(let i=0; i<=this.max; i+=1) {
+    for (let i = 0; i <= this.max; i += 1) {
       tempX.push(i);
       tempY.push(i);
-      for(let j=0; j<=this.max; j+=1) {
-        tmpCoordinatesList.push(i+'-'+j);
+      for (let j = 0; j <= this.max; j += 1) {
+        tmpCoordinatesList.push(i + '-' + j);
       }
     }
     this.map = {
@@ -77,9 +77,9 @@ export class AppComponent implements OnInit, AfterViewInit {
       x: tempX,
       y: tempY
     }
-    const tmpSnake: string[]=[];
-    const startPoint = Math.floor(tmpCoordinatesList.length/3);
-    for(let i=startPoint; i<startPoint+5; i+=1) {
+    const tmpSnake: string[] = [];
+    const startPoint = Math.floor(tmpCoordinatesList.length / 3);
+    for (let i = startPoint; i < startPoint + 5; i += 1) {
       tmpSnake.push(tmpCoordinatesList[i])
     }
     this.snake = tmpSnake; // Default Snake Position and Condition
@@ -88,8 +88,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   generatPrey(): Promise<void> {
     const randomX = Math.floor((Math.random() * this.max) + 0);
     const randomY = Math.floor((Math.random() * this.max) + 0);
-    const tmpPrey = randomX+'-'+randomY;
-    return new Promise<void>((resolve)=>{
+    const tmpPrey = randomX + '-' + randomY;
+    return new Promise<void>((resolve) => {
       if (this.snake.includes(tmpPrey)) {
         this.generatPrey();
       } else {
@@ -102,7 +102,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.run();
   }
   run() {
-    this.time = setInterval(()=>{
+    this.time = setInterval(() => {
       const head = this.snake[0];
       const n = head.split('-');
       const nX = Number(n[0]);
@@ -144,19 +144,38 @@ export class AppComponent implements OnInit, AfterViewInit {
           newnY = nY + 1;
         }
         newHead = `${nX}-${newnY}`
+        this.locked = KeyboardArrow.L;
+      } else {
+        return;
+      }
+      if (this.snake.includes(newHead)) {
+        this.gameOver = true;
+      } else {
+        this.gameOver = false;
       }
       const newSnake = [newHead, ...this.snake];
-      newSnake.pop();
       this.move(newSnake);
-    },1000)
+    }, 1000)
   }
   async move(newSnake: string[]) {
+    if (this.gameOver) {
+      return;
+    }
     if (newSnake.includes(this.prey)) {
       await this.generatPrey();
-      let newTail;
-      
       this.snake = newSnake;
-    };
-    this.snake = newSnake;
+    } else {
+      newSnake.pop();
+      this.snake = newSnake;
+    }
+    if (this.up) {
+      this.locked = KeyboardArrow.D;
+    } else if (this.down) {
+      this.locked = KeyboardArrow.U;
+    } else if (this.left) {
+      this.locked = KeyboardArrow.R;
+    } else if (this.right) {
+      this.locked = KeyboardArrow.L;
+    }
   }
 }
