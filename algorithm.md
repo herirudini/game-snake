@@ -18,6 +18,7 @@
   - Apabila ular memakan mangsa, maka memory si ular bertambah (ular memanjang)
   - Apabila ular mengenai dirinya sendiri, maka Game Over
   - Apabila ular mengenai batas Arena, maka dia teleport ke batas sebaliknya
+  - Apabila ular memakan mangsa, maka kecepatan akan bertambah
 - Control:
   - Play: run Time
   - Pause: stop Time

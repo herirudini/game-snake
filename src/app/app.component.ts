@@ -26,6 +26,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   left: boolean;
   right: boolean;
   locked: string;
+  speed: number = 1000;
   constructor() {
   }
   @HostListener("window:resize")
@@ -61,7 +62,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.generateArena();
   }
 
-  generateArena() {
+  async generateArena() {
     const tempX: number[] = [];
     const tempY: number[] = [];
     const tmpCoordinatesList: string[] = [];
@@ -83,7 +84,8 @@ export class AppComponent implements OnInit, AfterViewInit {
       tmpSnake.push(tmpCoordinatesList[i])
     }
     this.snake = tmpSnake; // Default Snake Position and Condition
-    this.generatPrey();
+    await this.generatPrey();
+    this.run();
   }
   generatPrey(): Promise<void> {
     const randomX = Math.floor((Math.random() * this.max) + 0);
@@ -99,10 +101,9 @@ export class AppComponent implements OnInit, AfterViewInit {
     })
   }
   ngAfterViewInit(): void {
-    this.run();
   }
   run() {
-    this.time = setInterval(() => {
+    setTimeout(() => {
       const head = this.snake[0];
       const n = head.split('-');
       const nX = Number(n[0]);
@@ -119,7 +120,8 @@ export class AppComponent implements OnInit, AfterViewInit {
         } else {
           newnX = nX - 1;
         }
-        newHead = `${newnX}-${nY}`
+        newHead = `${newnX}-${nY}`;
+        this.locked = KeyboardArrow.D;
       } else if (this.down) {
         let newnX;
         if (bottomEnd) {
@@ -127,7 +129,8 @@ export class AppComponent implements OnInit, AfterViewInit {
         } else {
           newnX = nX + 1;
         }
-        newHead = `${newnX}-${nY}`
+        newHead = `${newnX}-${nY}`;
+        this.locked = KeyboardArrow.U;
       } else if (this.left) {
         let newnY;
         if (leftEnd) {
@@ -135,7 +138,8 @@ export class AppComponent implements OnInit, AfterViewInit {
         } else {
           newnY = nY - 1;
         }
-        newHead = `${nX}-${newnY}`
+        newHead = `${nX}-${newnY}`;
+        this.locked = KeyboardArrow.R;
       } else if (this.right) {
         let newnY;
         if (rightEnd) {
@@ -143,9 +147,10 @@ export class AppComponent implements OnInit, AfterViewInit {
         } else {
           newnY = nY + 1;
         }
-        newHead = `${nX}-${newnY}`
+        newHead = `${nX}-${newnY}`;
         this.locked = KeyboardArrow.L;
       } else {
+        this.run();
         return;
       }
       if (this.snake.includes(newHead)) {
@@ -154,28 +159,23 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.gameOver = false;
       }
       const newSnake = [newHead, ...this.snake];
-      this.move(newSnake);
-    }, 1000)
+
+      this.move(newSnake)
+    }, this.speed);
   }
   async move(newSnake: string[]) {
     if (this.gameOver) {
+      this.run();
       return;
     }
     if (newSnake.includes(this.prey)) {
       await this.generatPrey();
       this.snake = newSnake;
+      this.speed = this.speed > 100 ? this.speed - 100 : 100;
     } else {
       newSnake.pop();
       this.snake = newSnake;
     }
-    if (this.up) {
-      this.locked = KeyboardArrow.D;
-    } else if (this.down) {
-      this.locked = KeyboardArrow.U;
-    } else if (this.left) {
-      this.locked = KeyboardArrow.R;
-    } else if (this.right) {
-      this.locked = KeyboardArrow.L;
-    }
+    this.run();
   }
 }
